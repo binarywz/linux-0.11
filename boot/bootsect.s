@@ -31,7 +31,7 @@ begdata:
 begbss:
 .text
 
-SETUPLEN = 4				! nr of setup-sectors
+SETUPLEN = 4					! nr of setup-sectors
 BOOTSEG  = 0x07c0			! original address of boot-sector
 INITSEG  = 0x9000			! we move boot here - out of the way
 SETUPSEG = 0x9020			! setup starts here
@@ -44,6 +44,7 @@ ROOT_DEV = 0x306
 
 entry _start
 _start:
+	! 将内存中开始地址为DS:SI的256个字移动到开始地址为ES:DI的地方
 	mov	ax,#BOOTSEG
 	mov	ds,ax
 	mov	ax,#INITSEG
@@ -51,8 +52,11 @@ _start:
 	mov	cx,#256
 	sub	si,si
 	sub	di,di
+	! 移动是rep/movw指令的结果，其中w就是要移动一个字，对应两个字节，索引共移动512个字节，这正好是一个扇区的大小
+	! DS:SI=0x7c00，ES:DI=0x90000
 	rep
 	movw
+	! 设置CS寄存器为INITSEG，IP寄存器为标号go
 	jmpi	go,INITSEG
 go:	mov	ax,cs
 	mov	ds,ax
